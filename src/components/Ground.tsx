@@ -1,11 +1,14 @@
-
+// src/components/Ground.tsx
 import React from "react";
+import { useTexture } from "@react-three/drei";
 
 const Ground: React.FC = () => {
+  const texture = useTexture("/textures/wood/wood_floor_diff_4k.jpg");
+
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]}>
       <planeGeometry args={[20, 20]} />
-      <meshStandardMaterial color="#dcdcdc" /> {/* Light gray floor */}
+      <meshStandardMaterial map={texture} />
     </mesh>
   );
 };

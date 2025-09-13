@@ -5,20 +5,22 @@ import { useTexture } from "@react-three/drei";
 interface WallProps {
   position: [number, number, number];
   rotation?: [number, number, number];
+  width?: number;
+  height?: number;
 }
 
-const Wall: React.FC<WallProps> = ({ position, rotation = [0, 0, 0] }) => {
-  const colorMap = useTexture("/textures/concrete/basecolor.jpg");
-  const dispMap = useTexture("/textures/concrete/disp.png");
+const Wall: React.FC<WallProps> = ({
+  position,
+  rotation = [0, 0, 0],
+  width = 20,
+  height = 10,
+}) => {
+  const colorMap = useTexture("/textures/concrete/concrete_tile_facade_diff_4k.jpg");
 
   return (
     <mesh position={position} rotation={rotation}>
-      <planeGeometry args={[20, 10, 100, 100]} /> 
-      <meshStandardMaterial
-        map={colorMap}
-        displacementMap={dispMap}
-        displacementScale={0.1}
-      />
+      <planeGeometry args={[width, height]} />
+      <meshStandardMaterial map={colorMap} />
     </mesh>
   );
 };

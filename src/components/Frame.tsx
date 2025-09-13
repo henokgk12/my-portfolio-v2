@@ -4,22 +4,23 @@ import { Html } from "@react-three/drei";
 
 interface FrameProps {
   position: [number, number, number];
-  rotation?: [number, number, number];
   title: string;
-  description?: string; // ✅ add this
+  description?: string;
 }
 
-const Frame: React.FC<FrameProps> = ({ position, rotation = [0, 0, 0], title, description }) => {
+const Frame: React.FC<FrameProps> = ({ position, title, description }) => {
   return (
-    <mesh position={position} rotation={rotation}>
-      <boxGeometry args={[1, 1, 0.1]} />
-      <meshStandardMaterial color="#fff" />
-      <Html position={[0, 0.6, 0]} center>
-        <div className="bg-gray-800 text-white p-2 rounded shadow-lg">
-          <h3>{title}</h3>
-          {description && <p>{description}</p>}
-        </div>
-      </Html>
+    <mesh position={position}>
+      <boxGeometry args={[1.2, 0.8, 0.05]} />
+      <meshStandardMaterial color="#FFD700" />
+      {description && (
+        <Html position={[0, 0, 0.1]} center>
+          <div className="bg-gray-900 p-2 rounded shadow-lg text-white text-sm">
+            <strong>{title}</strong>
+            <p>{description}</p>
+          </div>
+        </Html>
+      )}
     </mesh>
   );
 };
