@@ -23,6 +23,9 @@ const App: React.FC = () => {
 
         {/* Desk */}
         <Desk />
+        <Ground />
+<Wall position={[0, 5, -10]} rotation={[0, 0, 0]} />
+<Frame position={[0, 3, -2.9]} title="My Cert" description="Certificate description" />
 
         {/* PC */}
         <PC position={[0, 0.8, 0]} />
