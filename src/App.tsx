@@ -1,31 +1,60 @@
 // src/App.tsx
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useTexture } from "@react-three/drei";
 import Desk from "./components/Desk";
 import PC from "./components/PC";
-import Ground from "./components/Ground";
-import Wall from "./components/Wall";
 import Frame from "./components/Frame";
+
+// Simple Ground component with wood texture
+const Ground: React.FC = () => {
+  const woodTexture = useTexture("/textures/wood.jpg");
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.1, 0]}>
+      <planeGeometry args={[20, 20]} />
+      <meshStandardMaterial map={woodTexture} />
+    </mesh>
+  );
+};
+
+// Wall component with concrete texture
+const Wall: React.FC<{ position: [number, number, number]; rotation?: [number, number, number] }> = ({
+  position,
+  rotation = [0, 0, 0],
+}) => {
+  const colorMap = useTexture("/textures/concrete/concrete.jpg");
+  const dispMap = useTexture("/textures/concrete/disp.png");
+
+  return (
+    <mesh position={position} rotation={rotation}>
+      <planeGeometry args={[20, 10, 100, 100]} />
+      <meshStandardMaterial map={colorMap} displacementMap={dispMap} displacementScale={0.1} />
+    </mesh>
+  );
+};
 
 const App: React.FC = () => {
   return (
     <div className="w-screen h-screen">
-      <Canvas camera={{ position: [5, 5, 10], fov: 50 }}>
+      <Canvas camera={{ position: [0, 2, 5], fov: 50 }}>
         {/* Lights */}
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.6} />
         <directionalLight position={[5, 5, 5]} intensity={1} />
-        <hemisphereLight args={["#ffffff", "#888888", 0.5]} />
 
-        {/* Floor and walls */}
+        {/* Ground */}
         <Ground />
-        <Wall position={[0, 5, -10]} rotation={[0, 0, 0]} />
+
+        {/* Walls */}
+        <Wall position={[0, 5, -10]} /> {/* Back wall */}
+        <Wall position={[10, 5, 0]} rotation={[0, -Math.PI / 2, 0]} /> {/* Right wall */}
+        <Wall position={[-10, 5, 0]} rotation={[0, Math.PI / 2, 0]} /> {/* Left wall */}
+        <Wall position={[0, 5, 10]} rotation={[0, Math.PI, 0]} /> {/* Front wall */}
 
         {/* Desk and PC */}
-        <Desk position={[0, -0.5, 0]} />
-        <PC position={[0, 0.3, 0]} />
+        <Desk />
+        <PC position={[0, 0.8, 0]} />
 
-        {/* Frame */}
+        {/* Frame / Certificates */}
         <Frame
           position={[0, 3, -2.9]}
           title="My Certificate"
@@ -33,28 +62,11 @@ const App: React.FC = () => {
         />
 
         {/* Camera controls */}
-        <OrbitControls makeDefault />
-
-        {/* Optional extra walls/floor */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]}>
-          <planeGeometry args={[20, 20]} />
-          <meshStandardMaterial color="#4a4a4a" />
-        </mesh>
-
-        <mesh position={[0, 2, -10]}>
-          <planeGeometry args={[20, 10]} />
-          <meshStandardMaterial color="#dcdcdc" />
-        </mesh>
-
-        <mesh rotation={[0, Math.PI / 2, 0]} position={[-10, 2, 0]}>
-          <planeGeometry args={[20, 10]} />
-          <meshStandardMaterial color="#e0e0e0" />
-        </mesh>
-
-        <mesh rotation={[0, -Math.PI / 2, 0]} position={[10, 2, 0]}>
-          <planeGeometry args={[20, 10]} />
-          <meshStandardMaterial color="#e0e0e0" />
-        </mesh>
+        <OrbitControls
+          maxDistance={15} // Limit zoom out
+          minDistance={2}  // Limit zoom in
+          enablePan={true}
+        />
       </Canvas>
     </div>
   );

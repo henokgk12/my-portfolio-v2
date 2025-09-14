@@ -1,22 +1,31 @@
-// src/components/Desk.tsx
 import React from "react";
-interface DeskProps {
-  position?: [number, number, number];
-  rotation?: [number, number, number];
-  scale?: [number, number, number];
-}
 
-const Desk: React.FC<DeskProps> = ({
-  position = [0, 0, 0],
-  rotation = [-0.1, 0, 0],
-  scale = [4, 0.2, 2],
-}) => {
+export default function Desk() {
   return (
-    <mesh position={position} rotation={rotation} scale={scale}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="#8B4513" />
-    </mesh>
-  );
-};
+    <group>
+      {/* Table top */}
+      <mesh position={[0, -1, 0]}>
+        <boxGeometry args={[4, 0.2, 2]} />
+        <meshStandardMaterial color="#8B4513" /> {/* dark wood */}
+      </mesh>
 
-export default Desk;
+      {/* Legs */}
+      <mesh position={[-1.8, -2, -0.8]}>
+        <boxGeometry args={[0.2, 2, 0.2]} />
+        <meshStandardMaterial color="#5A2E0C" />
+      </mesh>
+      <mesh position={[1.8, -2, -0.8]}>
+        <boxGeometry args={[0.2, 2, 0.2]} />
+        <meshStandardMaterial color="#5A2E0C" />
+      </mesh>
+      <mesh position={[-1.8, -2, 0.8]}>
+        <boxGeometry args={[0.2, 2, 0.2]} />
+        <meshStandardMaterial color="#5A2E0C" />
+      </mesh>
+      <mesh position={[1.8, -2, 0.8]}>
+        <boxGeometry args={[0.2, 2, 0.2]} />
+        <meshStandardMaterial color="#5A2E0C" />
+      </mesh>
+    </group>
+  );
+}
