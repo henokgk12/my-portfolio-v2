@@ -5,8 +5,8 @@ import { OrbitControls, useTexture } from "@react-three/drei";
 import Desk from "./components/Desk";
 import PC from "./components/PC";
 import Frame from "./components/Frame";
-
-// Simple Ground component with wood texture
+import FlowerPot from "./components/FlowerPot";
+// Ground component with wood texture
 const Ground: React.FC = () => {
   const woodTexture = useTexture("/textures/wood.jpg");
   return (
@@ -18,10 +18,11 @@ const Ground: React.FC = () => {
 };
 
 // Wall component with concrete texture
-const Wall: React.FC<{ position: [number, number, number]; rotation?: [number, number, number] }> = ({
-  position,
-  rotation = [0, 0, 0],
-}) => {
+interface WallProps {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+}
+const Wall: React.FC<WallProps> = ({ position, rotation = [0, 0, 0] }) => {
   const colorMap = useTexture("/textures/concrete/concrete.jpg");
   const dispMap = useTexture("/textures/concrete/disp.png");
 
@@ -51,20 +52,23 @@ const App: React.FC = () => {
         <Wall position={[0, 5, 10]} rotation={[0, Math.PI, 0]} /> {/* Front wall */}
 
         {/* Desk and PC */}
-        <Desk />
+        <Desk position={[0, 0, 0]} />
         <PC position={[0, 0.8, 0]} />
+        <FlowerPot position={[1, 0.85, 0]} /> {/* On desk right side */}
+<Frame position={[0, 3, -9.9]} title="Certificate" /> {/* On back wall */}
+<Frame position={[3, 3, -9.9]} title="Award" />
 
         {/* Frame / Certificates */}
         <Frame
           position={[0, 3, -2.9]}
           title="My Certificate"
-          description="This is one of my certificates."
+          
         />
 
         {/* Camera controls */}
         <OrbitControls
-          maxDistance={15} // Limit zoom out
-          minDistance={2}  // Limit zoom in
+          maxDistance={15} // prevent zooming out past room
+          minDistance={2}  // prevent zooming inside desk
           enablePan={true}
         />
       </Canvas>

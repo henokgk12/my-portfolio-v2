@@ -1,27 +1,26 @@
-// src/components/Frame.tsx
+// Frame.tsx
 import React from "react";
-import { Html } from "@react-three/drei";
 
 interface FrameProps {
   position: [number, number, number];
   title: string;
-  description?: string;
 }
 
-const Frame: React.FC<FrameProps> = ({ position, title, description }) => {
+const Frame: React.FC<FrameProps> = ({ position, title }) => {
   return (
-    <mesh position={position}>
-      <boxGeometry args={[1.2, 0.8, 0.05]} />
-      <meshStandardMaterial color="#FFD700" />
-      {description && (
-        <Html position={[0, 0, 0.1]} center>
-          <div className="bg-gray-900 p-2 rounded shadow-lg text-white text-sm">
-            <strong>{title}</strong>
-            <p>{description}</p>
-          </div>
-        </Html>
-      )}
-    </mesh>
+    <group position={position}>
+      {/* Frame body */}
+      <mesh>
+        <boxGeometry args={[1.5, 1, 0.05]} />
+        <meshStandardMaterial color="#2c2c2c" />
+      </mesh>
+
+      {/* Picture area */}
+      <mesh position={[0, 0, 0.03]}>
+        <planeGeometry args={[1.3, 0.8]} />
+        <meshStandardMaterial color="#fafafa" />
+      </mesh>
+    </group>
   );
 };
 
