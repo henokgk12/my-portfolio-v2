@@ -1,17 +1,28 @@
-// PC.tsx
-import React from "react";
+import React, { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 interface PCProps {
   position?: [number, number, number];
+  onClick?: () => void;
 }
 
-const PC: React.FC<PCProps> = ({ position = [0, 0, 0] }) => {
+const PC: React.FC<PCProps> = ({ position = [0, 0, 0], onClick }) => {
+  const monitorRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (monitorRef.current) {
+      const intensity = 0.1 + Math.sin(clock.getElapsedTime() * 2) * 0.05; // subtle pulse
+      (monitorRef.current.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(intensity, intensity, intensity);
+    }
+  });
+
   return (
     <group position={position}>
       {/* Monitor */}
-      <mesh position={[0, 1.2, 0]}>
+      <mesh ref={monitorRef} position={[0, 1.2, 0]} onClick={onClick} castShadow>
         <boxGeometry args={[1.2, 0.7, 0.05]} />
-        <meshStandardMaterial color="black" />
+        <meshStandardMaterial color="black" emissive="white" emissiveIntensity={0.1} />
       </mesh>
 
       {/* Monitor stand */}
@@ -21,7 +32,7 @@ const PC: React.FC<PCProps> = ({ position = [0, 0, 0] }) => {
       </mesh>
 
       {/* CPU Tower */}
-      <mesh position={[-1, 0.5, 0]}>
+      <mesh position={[-1.2, 0.85, 0]}>
         <boxGeometry args={[0.4, 1, 0.6]} />
         <meshStandardMaterial color="black" />
       </mesh>

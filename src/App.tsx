@@ -1,78 +1,129 @@
 // src/App.tsx
-import React from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useTexture } from "@react-three/drei";
-import Desk from "./components/Desk";
+import React, { useState, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Html, useTexture } from "@react-three/drei";
+import * as THREE from "three";
+
 import PC from "./components/PC";
-import Frame from "./components/Frame";
-import FlowerPot from "./components/FlowerPot";
-// Ground component with wood texture
-const Ground: React.FC = () => {
-  const woodTexture = useTexture("/textures/wood.jpg");
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.1, 0]}>
-      <planeGeometry args={[20, 20]} />
-      <meshStandardMaterial map={woodTexture} />
-    </mesh>
-  );
-};
+import Desk from "./components/Desk";
+import Wall from "./components/Wall";
+import Ground from "./components/Ground";
+import Modal from "./components/Modal";
 
-// Wall component with concrete texture
-interface WallProps {
-  position: [number, number, number];
-  rotation?: [number, number, number];
-}
-const Wall: React.FC<WallProps> = ({ position, rotation = [0, 0, 0] }) => {
-  const colorMap = useTexture("/textures/concrete/concrete.jpg");
-  const dispMap = useTexture("/textures/concrete/disp.png");
+// Main App
+function App() {
+  const [certModal, setCertModal] = useState<string | null>(null);
+  const [resumeModal, setResumeModal] = useState(false);
+
+  // Certificates: cert1 is PDF, others are images
+  const certificates = [
+    {
+      pos: [-1.5, 1.75, -1.95],
+      preview: "/cert1_preview.jpg", // image preview of PDF
+      pdf: "/cert1.pdf",
+      label: "Certificate 1",
+    },
+    {
+      pos: [0, 1.75, -1.95],
+      preview: "/cert2.jpg",
+      pdf: null,
+      label: "Certificate 2",
+    },
+    {
+      pos: [1.5, 1.75, -1.95],
+      preview: "/cert3.jpg",
+      pdf: null,
+      label: "Certificate 3",
+    },
+  ];
 
   return (
-    <mesh position={position} rotation={rotation}>
-      <planeGeometry args={[20, 10, 100, 100]} />
-      <meshStandardMaterial map={colorMap} displacementMap={dispMap} displacementScale={0.1} />
-    </mesh>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <div className="w-screen h-screen">
-      <Canvas camera={{ position: [0, 2, 5], fov: 50 }}>
+    <>
+      <Canvas shadows camera={{ position: [0, 2.5, 6], fov: 45 }}>
         {/* Lights */}
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 5, 5]} intensity={1} />
-
-        {/* Ground */}
-        <Ground />
-
-        {/* Walls */}
-        <Wall position={[0, 5, -10]} /> {/* Back wall */}
-        <Wall position={[10, 5, 0]} rotation={[0, -Math.PI / 2, 0]} /> {/* Right wall */}
-        <Wall position={[-10, 5, 0]} rotation={[0, Math.PI / 2, 0]} /> {/* Left wall */}
-        <Wall position={[0, 5, 10]} rotation={[0, Math.PI, 0]} /> {/* Front wall */}
-
-        {/* Desk and PC */}
-        <Desk position={[0, 0, 0]} />
-        <PC position={[0, 0.8, 0]} />
-        <FlowerPot position={[1, 0.85, 0]} /> {/* On desk right side */}
-<Frame position={[0, 3, -9.9]} title="Certificate" /> {/* On back wall */}
-<Frame position={[3, 3, -9.9]} title="Award" />
-
-        {/* Frame / Certificates */}
-        <Frame
-          position={[0, 3, -2.9]}
-          title="My Certificate"
-          
+        <ambientLight intensity={0.5} />
+        <directionalLight
+          position={[5, 10, 5]}
+          castShadow
+          intensity={1}
+          onUpdate={(self) => {
+            self.intensity = 0.9 + 0.1 * Math.sin(performance.now() / 500);
+          }}
         />
 
         {/* Camera controls */}
-        <OrbitControls
-          maxDistance={15} // prevent zooming out past room
-          minDistance={2}  // prevent zooming inside desk
-          enablePan={true}
-        />
+        <OrbitControls enablePan enableZoom maxDistance={10} minDistance={2} />
+
+        {/* Scene */}
+        <Ground />
+        <Desk position={[0, 0, 0]} />
+        <Wall position={[0, 1, -2]} rotation={[-0.05, 0, 0]} />
+
+        {/* Floating Frames */}
+        {certificates.map((cert, i) => (
+          <FloatingFrame
+            key={i}
+            position={cert.pos as [number, number, number]}
+            textureUrl={cert.preview}
+            overlayText={cert.label}
+            onClick={() => cert.pdf && setCertModal(cert.pdf)}
+          />
+        ))}
+
+        {/* PC */}
+        <PC position={[0, 0.01, 0]} onClick={() => setResumeModal(true)} />
       </Canvas>
-    </div>
+
+      {/* Certificate Modal */}
+      <Modal isOpen={!!certModal} onClose={() => setCertModal(null)}>
+        {certModal && <embed src={certModal} type="application/pdf" width="100%" height="600px" />}
+      </Modal>
+
+      {/* Resume Modal */}
+      <Modal isOpen={resumeModal} onClose={() => setResumeModal(false)}>
+        <embed src="/resume.pdf" type="application/pdf" width="100%" height="600px" />
+      </Modal>
+    </>
+  );
+}
+
+// FloatingFrame component: gently floats up and down
+interface FloatingFrameProps {
+  position: [number, number, number];
+  textureUrl?: string;
+  overlayText?: string;
+  onClick?: () => void;
+}
+
+const FloatingFrame: React.FC<FloatingFrameProps> = ({ position, textureUrl, overlayText, onClick }) => {
+  const ref = useRef<THREE.Mesh>(null);
+
+  // Safe texture loading: fallback to orange color if missing
+  let texture;
+  try {
+    if (textureUrl) texture = useTexture(textureUrl);
+  } catch (e) {
+    console.warn("Texture failed to load:", textureUrl, e);
+    texture = undefined;
+  }
+
+  // Gentle floating animation
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      ref.current.position.y = position[1] + Math.sin(clock.getElapsedTime()) * 0.02;
+    }
+  });
+
+  return (
+    <mesh ref={ref} position={position} onClick={onClick} castShadow>
+      <planeGeometry args={[1, 0.7]} />
+      <meshStandardMaterial map={texture || undefined} color={texture ? undefined : "orange"} />
+      {overlayText && (
+        <Html distanceFactor={1.2} style={{ pointerEvents: "none" }}>
+          {overlayText}
+        </Html>
+      )}
+    </mesh>
   );
 };
 
