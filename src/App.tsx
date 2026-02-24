@@ -1,16 +1,39 @@
 // src/App.tsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, Suspense} from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import { useGLTF } from "@react-three/drei";
 
+{/*
 import PC from "./components/PC";
-import Desk from "./components/Desk";
+import Desk from "./components/Desk";*/}
 import Wall from "./components/Wall";
 import Ground from "./components/Ground";
 import Modal from "./components/Modal";
 
 // Main App
+const Workbench: React.FC = () => {
+  const { scene } = useGLTF("/models/lap.glb");
+
+  // Enable shadows properly
+  React.useEffect(() => {
+    scene.traverse((child: any) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [scene]);
+
+  return (
+    <primitive
+      object={scene}
+      scale={0.08}   // ⬅️ 8x bigger than 0.01
+      position={[0, -1.05, 0]}
+    />
+  );
+};
 function App() {
   const [certModal, setCertModal] = useState<string | null>(null);
   const [resumeModal, setResumeModal] = useState(false);
@@ -39,40 +62,27 @@ function App() {
 
   return (
     <>
-      <Canvas shadows camera={{ position: [0, 2.5, 6], fov: 45 }}>
-        {/* Lights */}
-        <ambientLight intensity={0.5} />
-        <directionalLight
-          position={[5, 10, 5]}
-          castShadow
-          intensity={1}
-          onUpdate={(self) => {
-            self.intensity = 0.9 + 0.1 * Math.sin(performance.now() / 500);
-          }}
-        />
+    <Canvas shadows camera={{ position: [0, 2.5, 6], fov: 45 }}>
+  <ambientLight intensity={0.5} />
+  <directionalLight position={[5, 10, 5]} castShadow intensity={1} />
+  <OrbitControls enablePan enableZoom maxDistance={10} minDistance={2} />
 
-        {/* Camera controls */}
-        <OrbitControls enablePan enableZoom maxDistance={10} minDistance={2} />
+  <Ground />
+  <Suspense fallback={null}>
+    <Workbench />
+  </Suspense>
 
-        {/* Scene */}
-        <Ground />
-        <Desk position={[0, 0, 0]} />
-        <Wall position={[0, 1, -2]} rotation={[-0.05, 0, 0]} />
-
-        {/* Floating Frames */}
-        {certificates.map((cert, i) => (
-          <FloatingFrame
-            key={i}
-            position={cert.pos as [number, number, number]}
-            textureUrl={cert.preview}
-            overlayText={cert.label}
-            onClick={() => cert.pdf && setCertModal(cert.pdf)}
-          />
-        ))}
-
-        {/* PC */}
-        <PC position={[0, 0.01, 0]} onClick={() => setResumeModal(true)} />
-      </Canvas>
+  <Wall position={[0, 1, -2]} rotation={[-0.05, 0, 0]} />
+  {certificates.map((cert, i) => (
+    <FloatingFrame
+      key={i}
+      position={cert.pos as [number, number, number]}
+      textureUrl={cert.preview}
+      overlayText={cert.label}
+      onClick={() => cert.pdf && setCertModal(cert.pdf)}
+    />
+  ))}
+</Canvas>
 
       {/* Certificate Modal */}
       <Modal isOpen={!!certModal} onClose={() => setCertModal(null)}>
