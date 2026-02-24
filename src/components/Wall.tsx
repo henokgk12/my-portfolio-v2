@@ -18,8 +18,8 @@ const Wall: React.FC<WallProps> = ({
 }) => {
   let colorMap, displacementMap;
   try {
-    colorMap = useTexture("/textures/concrete_tile_facade_diff_4k.jpg");
-    displacementMap = useTexture("/textures/concrete_tile_facade_disp_4k.png");
+    colorMap = useTexture("/textures/concrete.jpg");
+    displacementMap = useTexture("/textures/disp.png");
     colorMap.wrapS = colorMap.wrapT = THREE.RepeatWrapping;
     colorMap.repeat.set(2, 2);
     displacementMap.wrapS = displacementMap.wrapT = THREE.RepeatWrapping;
